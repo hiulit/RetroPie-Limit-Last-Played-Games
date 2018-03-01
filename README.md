@@ -23,6 +23,12 @@ git pull
 ./retropie-limit-last-played-games.sh [OPTIONS]
 ```
 
+### Example
+
+`./retropie-limit-last-played-games.sh --nth 25 --systems`
+
+This will set the number of 'last played' games to limit at 25 and then it will show a dialog where it can selected as many systems as needed.
+
 If no options are passed, you will be prompted with a usage example:
 
 ```
