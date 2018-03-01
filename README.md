@@ -10,6 +10,13 @@ cd Retropie-Limit-Last-Played-Games/
 sudo chmod +x retropie-limit-last-played-games.sh
 ```
 
+## Updating
+
+```
+cd /home/pi/Retropie-Limit-Last-Played-Games/
+git pull
+```
+
 ## Usage
 
 ```
