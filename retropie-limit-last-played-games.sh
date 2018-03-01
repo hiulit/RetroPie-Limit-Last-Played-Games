@@ -6,7 +6,7 @@
 #
 # Author: hiulit
 # Repository: https://github.com/hiulit/RetroPie-Limit-Last-Played-Games
-# License: https://github.com/hiulit/RetroPie-Limit-Last-Played-Games/blob/master/LICENSE 
+# License: https://github.com/hiulit/RetroPie-Limit-Last-Played-Games/blob/master/LICENSE
 #
 # Requirements:
 # - RetroPie 4.x.x
@@ -37,7 +37,7 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 # Add as many systems as needed.
 SYSTEMS=()
 
-# Number of games to limit per system (10 by default).
+# Number of 'last played' games to limit per system (10 by default).
 nth_last_played=10
 
 
@@ -158,7 +158,7 @@ function get_all_systems() {
     local all_systems=()
     local system_dir
     local i=1
-    
+
     for system_dir in "$RP_ROMS_DIR/"*; do
         if [[ ! -L "$system_dir" ]]; then
             all_systems+=("$(basename "$system_dir")")
@@ -173,7 +173,7 @@ function get_options() {
         usage
         exit 0
     fi
-    
+
     while [[ -n "$1" ]]; do
         case "$1" in
 #H -h, --help               Print the help message and exit.
@@ -190,18 +190,18 @@ function get_options() {
                 echo
                 exit 0
                 ;;
-#H -n, --nth [number]       Set number of maximum games to show (10 by default).
+#H -n, --nth [number]       Set number of 'last played' games to limit per system (10 by default).
             -n|--nth)
                 check_argument "$1" "$2" || exit 1
                 shift
                 nth_last_played="$1"
                 ;;
 #H -s, --systems            Show dialog to select systems to limit.
-            -s|--systems)                
+            -s|--systems)
                 cmd=(dialog \
                     --backtitle "$SCRIPT_TITLE" \
                     --checklist "Select systems to limit" 15 50 15)
-                    
+
                 all_systems="$(get_all_systems)"
                 IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
                 i=1
@@ -209,14 +209,14 @@ function get_options() {
                     options+=("$i" "$system" off)
                     ((i++))
                 done
-                
+
                 choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
-                
+
                 if [[ -z "${choices[@]}" ]]; then
                     echo "No systems selected."
                     exit 1
                 fi
-                
+
                 IFS=" " read -r -a choices <<< "${choices[@]}"
                 for choice in "${choices[@]}"; do
                     SYSTEMS+=("${options[choice*3-2]}")
@@ -241,13 +241,13 @@ function main() {
         echo "ERROR: RetroPie is not installed. Aborting ..." >&2
         exit 1
     fi
-        
+
     get_options "$@"
-    
+
     echo "Number of 'last played' games to limit is set to '$nth_last_played'."
     for system in "${SYSTEMS[@]}"; do
         last_played_array=()
-        
+
         echo
         underline "$system"
         # Find gamelist.xml path.
