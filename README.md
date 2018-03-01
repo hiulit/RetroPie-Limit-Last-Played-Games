@@ -26,10 +26,10 @@ Use './retropie-limit-last-played-games.sh --help' to see all the options.
 
 ## Options
 
-`--help`: Print the help message and exit.
-`--nth`: Set number of 'last played' games to limit per system (10 by default).
-`--systems`: Show dialog to select systems to limit.
-`--version`: Show script version.
+* `--help`: Print the help message and exit.
+* `--nth`: Set number of 'last played' games to limit per system (10 by default).
+* `--systems`: Show dialog to select systems to limit.
+* `--version`: Show script version.
 
 ## Examples
 
