@@ -49,7 +49,7 @@ Set number of 'last played' games to limit per system (10 by default).
 
 * `[number]`: Number to limit 'last played' games per system.
 
-#### Example
+#### Example
 
 `./retropie-limit-last-played-games.sh --nth 25`
 
@@ -57,7 +57,7 @@ Set number of 'last played' games to limit per system (10 by default).
 
 Show dialog to select systems to limit.
 
-#### Example
+#### Example
 
 `./retropie-limit-last-played-games.sh --systems`
 
