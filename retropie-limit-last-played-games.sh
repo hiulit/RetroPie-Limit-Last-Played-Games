@@ -225,6 +225,7 @@ function get_options() {
 #H -v, --version            Show script version.
             -v|--version)
                 echo "$SCRIPT_VERSION"
+                exit 0
                 ;;
             *)
                 echo "ERROR: Invalid option '$1'." >&2
