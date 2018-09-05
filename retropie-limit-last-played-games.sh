@@ -206,8 +206,14 @@ function get_options() {
 #H -n, --nth [number]       Set number of 'last played' games to limit per system (10 by default).
             -n|--nth)
                 check_argument "$1" "$2" || exit 1
+                local option="$1"
                 shift
                 nth_last_played="$1"
+                if [[ "$nth_last_played" -eq 0 ]]; then
+                    echo "ERROR: '$option' is 0. Aborting ..."
+                    echo "Bye!"
+                    exit 1
+                fi
                 ;;
 #H -s, --systems            Show dialog to select systems to limit.
             -s|--systems)
@@ -226,7 +232,8 @@ function get_options() {
                 choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
 
                 if [[ -z "${choices[@]}" ]]; then
-                    echo "No systems selected."
+                    echo "No systems selected. Aborting ..."
+                    echo "Bye!"
                     exit 1
                 fi
 
