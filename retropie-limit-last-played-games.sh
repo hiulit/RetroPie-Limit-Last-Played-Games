@@ -94,7 +94,7 @@ function find_gamelist_xml() {
             pos="$((${#SYSTEMS[@]} - 1))"
             last="${SYSTEMS[$pos]}"
             [[ "$system" != "$last" ]] && echo "> Continuing with the next system ..."
-            continue
+            return 1
         else
             gamelist_path="$ES_GAMELISTS_DIR/$system/gamelist.xml"
             echo "'gamelist.xml' for '$system' found!"
@@ -115,7 +115,7 @@ function create_gamelist_xml_backup() {
             echo "'gamelist-backup.xml' for '$system' created successfully!"
         else
             echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
-            continue
+            return 1
         fi
     else
         echo "There is already a 'gamelist-backup.xml' for '$system'."
@@ -252,13 +252,13 @@ function main() {
         echo
         underline "$system"
         # Find gamelist.xml path.
-        find_gamelist_xml
+        find_gamelist_xml || continue
         #Create backup for gamelist.xml.
-        create_gamelist_xml_backup
+        create_gamelist_xml_backup || continue
         # Populate array with <lastplayed> tags found and sort them in a descending order.
-        get_sorted_lastplayed
+        get_sorted_lastplayed || continue
         # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('nth_last_played').
-        reset_playcount
+        reset_playcount || continue
     done
     echo
     echo "Done!"
