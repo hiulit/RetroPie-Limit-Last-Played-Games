@@ -84,6 +84,14 @@ function underline() {
 }
 
 
+function check_lastplayed_exists() {
+    if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
+        echo "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'."
+        return 1
+    fi
+}
+
+
 function find_gamelist_xml() {
     if [[ ! -f "$RP_ROMS_DIR/$system/gamelist.xml" ]]; then
         echo "ERROR: '$RP_ROMS_DIR/$system/gamelist.xml' doesn't exist!" >&2
@@ -118,12 +126,13 @@ function create_gamelist_xml_backup() {
             return 1
         fi
     else
-        echo "There is already a 'gamelist-backup.xml' for '$system'."
+        echo "WHOOPS! There is already a 'gamelist-backup.xml' for '$system'."
     fi
 }
 
 
 function get_sorted_lastplayed() {
+    check_lastplayed_exists
     while read -r line; do
         [[ -n "$line" ]] && last_played_array+=("$line")
     done < <(sort -r <(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml"))
@@ -134,6 +143,13 @@ function reset_playcount() {
     if [[ "${#last_played_array[@]}" -eq 0 ]]; then
         echo "ERROR: No 'last played' games to remove." >&2
     else
+        if [[ "${#last_played_array[@]}" -eq 1 ]]; then
+            is_are="is"
+            game_s="game"
+        else
+            is_are="are"
+            game_s="games"
+        fi
         echo "> Removing 'last played' games for '$system' ..."
         if [[ "$nth_last_played" -lt "${#last_played_array[@]}" ]]; then
             for last_played_item in "${last_played_array[@]:$nth_last_played}"; do
@@ -141,15 +157,12 @@ function reset_playcount() {
                 #~ xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
             done
             echo "> Done!"
+        elif [[ "$nth_last_played" -eq "${#last_played_array[@]}" ]]; then
+            echo "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
         else
             echo "ERROR: There aren't enough 'last played' games to remove." >&2
             echo "Try lowering the '--nth' number." >&2
-            if [[ "${#last_played_array[@]}" -eq 1 ]]; then
-                is_are="is"
-            else
-                is_are="are"
-            fi
-            echo "Now it's set to '$nth_last_played' and there $is_are only ${#last_played_array[@]} games in '$system'." >&2
+            echo "Now it's set to '$nth_last_played' and there $is_are only ${#last_played_array[@]} $game_s in '$system'." >&2
         fi
     fi
 }
