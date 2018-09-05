@@ -34,11 +34,14 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 
 # Variables #######################################
 
-# Add as many systems as needed.
-SYSTEMS=()
+readonly gamelist_backup_dir="gamelist-backup"
+readonly gamelist_backup_file="$gamelist_backup_dir.xml"
 
-# Number of 'last played' games to limit per system (10 by default).
-nth_last_played=10
+
+# Configuration  ##################################
+
+SYSTEMS=() # Array of systems. Add as many as needed. Wrap the systems in double quotes "" and use 1 space for separation.
+nth_last_played=10 # Number of 'last played' games to limit per system (10 by default).
 
 
 # Functions ######################################
@@ -115,18 +118,15 @@ function find_gamelist_xml() {
 
 
 function create_gamelist_xml_backup() {
-    echo "> Creating 'gamelist-backup.xml' for '$system' ..."
-    if [[ ! -f "$(dirname "$gamelist_path")/gamelist-backup.xml" ]]; then
-        cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/gamelist-backup.xml" > /dev/null
-        return_value="$?"
-        if [[ "$return_value" -eq 0 ]]; then
-            echo "'gamelist-backup.xml' for '$system' created successfully!"
-        else
-            echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
-            return 1
-        fi
+    echo "> Creating '$gamelist_backup_file' for '$system' ..."
+    mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
+    cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
+    return_value="$?"
+    if [[ "$return_value" -eq 0 ]]; then
+        echo "'$gamelist_backup_file' for '$system' created successfully!"
     else
-        echo "WHOOPS! There is already a 'gamelist-backup.xml' for '$system'."
+        echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
+        return 1
     fi
 }
 
