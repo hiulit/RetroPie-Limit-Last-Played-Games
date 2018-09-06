@@ -41,6 +41,12 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 readonly gamelist_backup_dir="gamelist-backups"
 readonly gamelist_backup_file="$gamelist_backup_dir.xml"
 
+readonly rp_menu_properties=(
+    "path ./$SCRIPT_NAME"
+    "name Limit Last Played Games"
+    "desc Limit the number of 'last played' games per system."
+)
+
 ## Flags
 
 DEBUG_FLAG=0
@@ -202,28 +208,33 @@ function get_all_systems() {
 }
 
 
-function configure_retropie_menu_gamelist() {
-    xmlstarlet ed -L -u "/gameList/game[path='./$SCRIPT_NAME']/name" -v "$SCRIPT_TITLE" "$RP_MENU_GAMELIST"
-    xmlstarlet ed -L -s "/gameList/game[path='./$SCRIPT_NAME']" -t elem -n "desc" -v "$SCRIPT_DESCRIPTION" "$RP_MENU_GAMELIST"
-}
-
-
 function install_script_retropie_menu() {
     cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
-    configure_retropie_menu_gamelist
-    local return_value
-    if [[ "$return_value" -eq 0 ]]; then
-        echo "Script installed successfully!"
+
+    if ! xmlstarlet sel -t -v "/gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST" > /dev/null; then
+        # Crete <newGame>
+        xmlstarlet ed -L -s "/gameList" -t elem -n "newGame" -v "" "$RP_MENU_GAMELIST"
+        for node in "${rp_menu_properties[@]}"; do
+            local key
+            local value
+            key="$(echo $node | grep  -Eo "^[^ ]+")"
+            value="$(echo $node | grep -Po "(?<= ).*")"
+            if [[ -n "$value" ]]; then
+                # Add nodes from $rp_menu_properties to <newGame>
+                xmlstarlet ed -L -s "/gameList/newGame" -t elem -n "$key" -v "$value" "$RP_MENU_GAMELIST"
+            fi
+        done
+        # Rename <newGame> to <game>
+        xmlstarlet ed -L -r "/gameList/newGame" -v "game" "$RP_MENU_GAMELIST"
     fi
+    echo "Script installed successfully!"
 }
 
 
 function uninstall_script_retropie_menu() {
     rm "$RP_MENU_DIR/$SCRIPT_NAME"
-    local return_value
-    if [[ "$return_value" -eq 0 ]]; then
-        echo "Script uninstalled successfully!"
-    fi
+    xmlstarlet ed -L -d "//gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST"
+    echo "Script uninstalled successfully!"
 }
 
 
@@ -355,6 +366,4 @@ function main() {
     fi
 }
 
-# main "$@"
-
-configure_retropie_menu_gamelist
+main "$@"
