@@ -246,7 +246,7 @@ function get_options() {
                 install_script_retropie_menu
                 exit 0
                 ;;
-#H -u, --uninstall            Unnstall the script in EmulationStation's RetroPie menu.
+#H -u, --uninstall            Uninstall the script in EmulationStation's RetroPie menu.
             -u|--uninstall)
                 uninstall_script_retropie_menu
                 exit 0
