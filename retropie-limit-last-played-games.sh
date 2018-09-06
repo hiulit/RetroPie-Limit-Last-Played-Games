@@ -35,6 +35,9 @@ readonly SCRIPT_FULL="$SCRIPT_DIR/$SCRIPT_NAME"
 readonly SCRIPT_TITLE="Retropie Limit Last Played Games"
 readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last played' games."
 
+readonly DIALOG_BACKTITLE="$SCRIPT_TITLE"
+readonly DIALOG_WIDTH=60
+
 
 # Variables #######################################
 
@@ -49,6 +52,7 @@ readonly rp_menu_properties=(
 
 ## Flags
 
+GUI_FLAG=0
 DEBUG_FLAG=0
 
 
@@ -238,6 +242,77 @@ function uninstall_script_retropie_menu() {
 }
 
 
+function dialog_msgbox() {
+    local title="$1"
+    local message="$2"
+    local dialog_height="$3"
+    local dialog_width="$4"
+    [[ -z "$title" ]] && log "ERROR: '${FUNCNAME[0]}' needs a title as an argument!" >&2 && exit 1
+    [[ -z "$message" ]] && log "ERROR: '${FUNCNAME[0]}' needs a message as an argument!" >&2 && exit 1
+    [[ -z "$dialog_height" ]] && dialog_height=8
+    [[ -z "$dialog_width" ]] && dialog_width="$DIALOG_WIDTH"
+    dialog \
+        --backtitle "$DIALOG_BACKTITLE" \
+        --title "$1" \
+        --ok-label "OK" \
+        --msgbox "$2" "$dialog_height" "$dialog_width" 2>&1 >/dev/tty
+}
+
+
+function dialog_choose_nth() {
+    local nth
+    nth="$(dialog \
+            --backtitle "$DIALOG_BACKTITLE" \
+            --title "" \
+            --cancel-label "Exit" \
+            --ok-label "Next" \
+            --inputbox "Enter a number to limit the games shown in 'last played' section." \
+            12 "$DIALOG_WIDTH" 2>&1 >/dev/tty)"
+    
+    if [[ -n "$nth" ]]; then
+        dialog_choose_systems
+    else
+        dialog_msgbox "Error!" "You must enter a number."
+        dialog_choose_nth
+    fi
+}
+
+
+function dialog_choose_systems() {
+    local options=()
+    local cmd
+    local choices
+    local choice
+
+    cmd=(dialog \
+        --backtitle "$DIALOG_BACKTITLE" \
+        --title "" \
+        --checklist "Select systems to limit" \
+        15 "$DIALOG_WIDTH" 15)
+
+    all_systems="$(get_all_systems)"
+    IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
+    i=1
+    for system in "${all_systems[@]}"; do
+        options+=("$i" "$system" off)
+        ((i++))
+    done
+
+    choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
+
+    if [[ -z "${choices[@]}" ]]; then
+        echo "No systems selected. Aborting ..."
+        echo "Bye!"
+        exit 1
+    fi
+
+    IFS=" " read -r -a choices <<< "${choices[@]}"
+    for choice in "${choices[@]}"; do
+        SYSTEMS+=("${options[choice*3-2]}")
+    done
+}
+
+
 function get_options() {
     if [[ -z "$1" ]]; then
         usage
@@ -283,30 +358,12 @@ function get_options() {
                 ;;
 #H -s, --systems            Show dialog to select systems to limit.
             -s|--systems)
-                cmd=(dialog \
-                    --backtitle "$SCRIPT_TITLE" \
-                    --checklist "Select systems to limit" 15 50 15)
-
-                all_systems="$(get_all_systems)"
-                IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
-                i=1
-                for system in "${all_systems[@]}"; do
-                    options+=("$i" "$system" off)
-                    ((i++))
-                done
-
-                choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
-
-                if [[ -z "${choices[@]}" ]]; then
-                    echo "No systems selected. Aborting ..."
-                    echo "Bye!"
-                    exit 1
-                fi
-
-                IFS=" " read -r -a choices <<< "${choices[@]}"
-                for choice in "${choices[@]}"; do
-                    SYSTEMS+=("${options[choice*3-2]}")
-                done
+                dialog_choose_systems
+                ;;
+#H -g, --gui                Start the GUI.
+            -g|--gui)
+                GUI_FLAG=1
+                dialog_choose_nth
                 ;;
 #H -d, --debug              Set debug mode to test the script.
             -d|--debug)
@@ -334,6 +391,12 @@ function main() {
     fi
 
     get_options "$@"
+
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        echo "gui"
+        # Create a log with the ouptut messages
+        exit
+    fi
 
     if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
         echo "No systems selected. Aborting ..."
