@@ -259,10 +259,6 @@ function get_options() {
 #H -d, --debug              Set debug mode to test the script.
             -d|--debug)
                 DEBUG_FLAG=1
-                echo
-                echo "DEBUG MODE: ON"
-                echo "No harm will done to the gamelists ;)"
-                echo
                 ;;
 #H -v, --version            Show script version.
             -v|--version)
@@ -292,6 +288,12 @@ function main() {
         echo "Bye!"
         exit 1
     else
+        if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+            echo
+            echo "DEBUG MODE: ON"
+            echo "No harm will done to the gamelists ;)"
+            echo
+        fi
         echo "Number of 'last played' games to limit is set to '$nth_last_played'."
         for system in "${SYSTEMS[@]}"; do
             last_played_array=()
