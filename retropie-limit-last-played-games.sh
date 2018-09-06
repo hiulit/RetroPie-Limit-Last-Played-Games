@@ -165,7 +165,9 @@ function reset_playcount() {
                 local game_name
                 game_name="$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_item']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")"
                 echo "- $game_name"
-                #~ xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+                    xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                fi
             done
             echo "> Done!"
         elif [[ "$nth_last_played" -eq "${#last_played_array[@]}" ]]; then
