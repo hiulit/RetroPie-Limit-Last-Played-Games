@@ -26,6 +26,7 @@ readonly RP_ROMS_DIR="$RP_DIR/roms"
 readonly RP_MENU_DIR="$RP_DIR/retropiemenu"
 readonly RP_CONFIGS_DIR="/opt/retropie/configs"
 readonly ES_GAMELISTS_DIR="$RP_CONFIGS_DIR/all/emulationstation/gamelists"
+readonly RP_MENU_GAMELIST="$ES_GAMELISTS_DIR/retropie/gamelist.xml"
 
 readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_DIR="$(cd "$(dirname $0)" && pwd)"
@@ -201,8 +202,15 @@ function get_all_systems() {
 }
 
 
+function configure_retropie_menu_gamelist() {
+    xmlstarlet ed -L -u "/gameList/game[path='./$SCRIPT_NAME']/name" -v "$SCRIPT_TITLE" "$RP_MENU_GAMELIST"
+    xmlstarlet ed -L -s "/gameList/game[path='./$SCRIPT_NAME']" -t elem -n "desc" -v "$SCRIPT_DESCRIPTION" "$RP_MENU_GAMELIST"
+}
+
+
 function install_script_retropie_menu() {
     cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
+    configure_retropie_menu_gamelist
     local return_value
     if [[ "$return_value" -eq 0 ]]; then
         echo "Script installed successfully!"
@@ -347,4 +355,6 @@ function main() {
     fi
 }
 
-main "$@"
+# main "$@"
+
+configure_retropie_menu_gamelist
