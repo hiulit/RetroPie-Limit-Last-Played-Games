@@ -122,15 +122,17 @@ function find_gamelist_xml() {
 
 
 function create_gamelist_xml_backup() {
-    echo "> Creating '$gamelist_backup_file' for '$system' ..."
-    mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
-    cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
-    return_value="$?"
-    if [[ "$return_value" -eq 0 ]]; then
-        echo "'$gamelist_backup_file' for '$system' created successfully!"
-    else
-        echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
-        return 1
+    if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+        echo "> Creating '$gamelist_backup_file' for '$system' ..."
+        mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
+        cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
+        return_value="$?"
+        if [[ "$return_value" -eq 0 ]]; then
+            echo "'$gamelist_backup_file' for '$system' created successfully!"
+        else
+            echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
+            return 1
+        fi
     fi
 }
 
