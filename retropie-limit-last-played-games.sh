@@ -30,7 +30,7 @@ readonly ES_GAMELISTS_DIR="$RP_CONFIGS_DIR/all/emulationstation/gamelists"
 readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_DIR="$(cd "$(dirname $0)" && pwd)"
 readonly SCRIPT_NAME="$(basename "$0")"
-readonly SCRIPT_FULL="$SCRIPT_DIR/SCRIPT_NAME"
+readonly SCRIPT_FULL="$SCRIPT_DIR/$SCRIPT_NAME"
 readonly SCRIPT_TITLE="Retropie Limit Last Played Games"
 readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last played' games."
 
