@@ -37,6 +37,10 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 readonly gamelist_backup_dir="gamelist-backup"
 readonly gamelist_backup_file="$gamelist_backup_dir.xml"
 
+## Flags
+
+DEBUG_FLAG=0
+
 
 # Configuration  ##################################
 
@@ -243,7 +247,14 @@ function get_options() {
                     SYSTEMS+=("${options[choice*3-2]}")
                 done
                 ;;
-#H -v, --version            Show script version.
+#H -d, --debug              Set debug mode to test the script.
+            -d|--debug)
+                DEBUG_FLAG=1
+                echo
+                echo "DEBUG MODE: ON"
+                echo "No harm will done to the gamelists ;)"
+                echo
+                ;#H -v, --version            Show script version.
             -v|--version)
                 echo "$SCRIPT_VERSION"
                 exit 0
