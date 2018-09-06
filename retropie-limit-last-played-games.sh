@@ -17,7 +17,9 @@
 user="$SUDO_USER"
 [[ -z "$user" ]] && user="$(id -un)"
 
-home="$(eval echo ~$user)"
+# home="$(eval echo ~$user)"
+home="$(find /home -type d -name RetroPie -print -quit 2> /dev/null)"
+home="${home%/RetroPie}"
 
 readonly RP_DIR="$home/RetroPie"
 readonly RP_ROMS_DIR="$RP_DIR/roms"
