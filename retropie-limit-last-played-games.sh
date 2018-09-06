@@ -259,7 +259,8 @@ function get_options() {
                 echo "DEBUG MODE: ON"
                 echo "No harm will done to the gamelists ;)"
                 echo
-                ;#H -v, --version            Show script version.
+                ;;
+#H -v, --version            Show script version.
             -v|--version)
                 echo "$SCRIPT_VERSION"
                 exit 0
