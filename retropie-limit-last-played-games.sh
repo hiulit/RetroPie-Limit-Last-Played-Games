@@ -145,7 +145,7 @@ function get_sorted_lastplayed() {
 
 function reset_playcount() {
     if [[ "${#last_played_array[@]}" -eq 0 ]]; then
-        echo "ERROR: No 'last played' games to remove." >&2
+        echo "No 'last played' games to remove." >&2
     else
         if [[ "${#last_played_array[@]}" -eq 1 ]]; then
             is_are="is"
@@ -293,7 +293,7 @@ function main() {
         reset_playcount || continue
     done
     echo
-    echo "Done!"
+    echo "All done!"
 }
 
 main "$@"
