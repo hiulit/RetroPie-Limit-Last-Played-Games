@@ -34,7 +34,7 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 
 # Variables #######################################
 
-readonly gamelist_backup_dir="gamelist-backup"
+readonly gamelist_backup_dir="gamelist-backups"
 readonly gamelist_backup_file="$gamelist_backup_dir.xml"
 
 ## Flags
