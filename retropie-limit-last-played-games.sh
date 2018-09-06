@@ -287,23 +287,29 @@ function main() {
 
     get_options "$@"
 
-    echo "Number of 'last played' games to limit is set to '$nth_last_played'."
-    for system in "${SYSTEMS[@]}"; do
-        last_played_array=()
+    if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
+        echo "No systems selected. Aborting ..."
+        echo "Bye!"
+        exit 1
+    else
+        echo "Number of 'last played' games to limit is set to '$nth_last_played'."
+        for system in "${SYSTEMS[@]}"; do
+            last_played_array=()
 
+            echo
+            underline "$system"
+            # Find gamelist.xml path.
+            find_gamelist_xml || continue
+            #Create backup for gamelist.xml.
+            create_gamelist_xml_backup || continue
+            # Populate array with <lastplayed> tags found and sort them in a descending order.
+            get_sorted_lastplayed || continue
+            # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('nth_last_played').
+            reset_playcount || continue
+        done
         echo
-        underline "$system"
-        # Find gamelist.xml path.
-        find_gamelist_xml || continue
-        #Create backup for gamelist.xml.
-        create_gamelist_xml_backup || continue
-        # Populate array with <lastplayed> tags found and sort them in a descending order.
-        get_sorted_lastplayed || continue
-        # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('nth_last_played').
-        reset_playcount || continue
-    done
-    echo
-    echo "All done!"
+        echo "All done!"
+    fi
 }
 
 main "$@"
