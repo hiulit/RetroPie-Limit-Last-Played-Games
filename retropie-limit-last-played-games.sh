@@ -202,11 +202,20 @@ function get_all_systems() {
 
 
 function install_script_retropie_menu() {
-    # if [[ ! -f "$RP_MENU_DIR/$SCRIPT_NAME" ]]; then
-        cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
-    # else
-        # echo "The script is already installed in EmulationStation's Retropie menu."
-    # fi
+    cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
+    local return_value
+    if [[ "$return_value" -eq 0 ]]; then
+        echo "Script installed successfully!"
+    fi
+}
+
+
+function uninstall_script_retropie_menu() {
+    rm "$RP_MENU_DIR/$SCRIPT_NAME"
+    local return_value
+    if [[ "$return_value" -eq 0 ]]; then
+        echo "Script uninstalled successfully!"
+    fi
 }
 
 
@@ -235,6 +244,11 @@ function get_options() {
 #H -i, --install            Install the script in EmulationStation's RetroPie menu.
             -i|--install)
                 install_script_retropie_menu
+                exit 0
+                ;;
+#H -u, --uninstall            Unnstall the script in EmulationStation's RetroPie menu.
+            -u|--uninstall)
+                uninstall_script_retropie_menu
                 exit 0
                 ;;
 #H -n, --nth [number]       Set number of 'last played' games to limit per system (10 by default).
