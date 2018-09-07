@@ -185,8 +185,6 @@ function install_script_retropie_menu() {
 $SCRIPT_FULL -g
 
 _EOF_
-    # chown -R "root":"root" "$RP_MENU_DIR/$SCRIPT_NAME"
-    # cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
 
     if ! xmlstarlet sel -t -v "/gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST" > /dev/null; then
         # Crete <newGame>
