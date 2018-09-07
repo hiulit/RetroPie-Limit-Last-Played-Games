@@ -29,6 +29,14 @@ git pull
 
 This will set the number of 'last played' games to limit at 25 and then it will show a dialog from where it can be selected as many systems as needed.
 
+`./retropie-limit-last-played-games.sh --nth 25 --systems --debug`
+
+This will set the debug mode on. It's perfect for testing the script before actually 'harming' the gamelists.
+
+`./retropie-limit-last-played-games.sh --gui`
+
+This will start the GUI. It will ask you to enter a number to limit the number of 'last played' the games shown. Then it will ask you to choose the desired systems to apply that limit.
+
 If no options are passed, you will be prompted with a usage example:
 
 ```
