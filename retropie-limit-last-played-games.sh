@@ -37,6 +37,14 @@ readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last pl
 
 readonly DIALOG_BACKTITLE="$SCRIPT_TITLE"
 readonly DIALOG_WIDTH=60
+readonly DIALOG_OK=0
+readonly DIALOG_CANCEL=1
+readonly DIALOG_HELP=2
+readonly DIALOG_EXTRA=3
+readonly DIALOG_ESC=255
+
+readonly LOG_DIR="$SCRIPT_DIR/logs"
+readonly LOG_FILE="$LOG_DIR/$(date +%F-%T).log"
 
 
 # Variables #######################################
@@ -59,13 +67,25 @@ DEBUG_FLAG=0
 # Configuration  ##################################
 
 SYSTEMS=() # Array of systems. Add as many as needed. Wrap the systems in double quotes "" and use 1 space for separation.
-nth_last_played=10 # Number of 'last played' games to limit per system (10 by default).
+NTH_LAST_PLAYED=10 # Number of 'last played' games to limit per system (10 by default).
 
 
 # Functions ######################################
 
 function is_retropie() {
     [[ -d "$RP_DIR" && -d "$home/.emulationstation" && -d "/opt/retropie" ]]
+}
+
+
+function log() {
+    if [[ -f "$LOG_FILE" ]]; then
+        if [[ "$GUI_FLAG" -eq 1 ]]; then
+            echo "$*" >> "$LOG_FILE"
+        fi
+        echo "$*"
+    else
+        echo "ERROR: Couldn't find the log file." >&2
+    fi
 }
 
 
@@ -100,14 +120,15 @@ function underline() {
     fi
     local dashes
     local message="$1"
-    echo "$message"
-    for ((i=1; i<="${#message}"; i+=1)); do [[ -n "$dashes" ]] && dashes+="-" || dashes="-"; done && echo "$dashes"
+    [[ "$GUI_FLAG" -eq 1 ]] && log "$message" || echo "$message"
+    for ((i=1; i<="${#message}"; i+=1)); do [[ -n "$dashes" ]] && dashes+="-" || dashes="-"; done
+    [[ "$GUI_FLAG" -eq 1 ]] && log "$dashes" || echo "$dashes"
 }
 
 
 function check_lastplayed_exists() {
     if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
-        echo "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'."
+        log "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'." >&2
         return 1
     fi
 }
@@ -115,11 +136,11 @@ function check_lastplayed_exists() {
 
 function find_gamelist_xml() {
     if [[ ! -f "$RP_ROMS_DIR/$system/gamelist.xml" ]]; then
-        echo "ERROR: '$RP_ROMS_DIR/$system/gamelist.xml' doesn't exist!" >&2
-        echo "> Trying '$ES_GAMELISTS_DIR/$system/gamelist.xml' ..."
+        log "ERROR: '$RP_ROMS_DIR/$system/gamelist.xml' doesn't exist!" >&2
+        log "> Trying '$ES_GAMELISTS_DIR/$system/gamelist.xml' ..." >&2
         if [[ ! -f "$ES_GAMELISTS_DIR/$system/gamelist.xml" ]]; then
-            echo "ERROR: '$ES_GAMELISTS_DIR/$system/gamelist.xml' doesn't exist!" >&2
-            echo "ERROR: Couldn't find any 'gamelist.xml' for '$system'." >&2
+            log "ERROR: '$ES_GAMELISTS_DIR/$system/gamelist.xml' doesn't exist!" >&2
+            log "ERROR: Couldn't find any 'gamelist.xml' for '$system'." >&2
             pos="$((${#SYSTEMS[@]} - 1))"
             last="${SYSTEMS[$pos]}"
             [[ "$system" != "$last" ]] && echo "> Continuing with the next system ..."
@@ -144,7 +165,7 @@ function create_gamelist_xml_backup() {
         if [[ "$return_value" -eq 0 ]]; then
             echo "'$gamelist_backup_file' for '$system' created successfully!"
         else
-            echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
+            log "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
             return 1
         fi
     fi
@@ -166,7 +187,7 @@ function get_sorted_lastplayed() {
 
 function reset_playcount() {
     if [[ "${#last_played_array[@]}" -eq 0 ]]; then
-        echo "No 'last played' games to remove." >&2
+        log "No 'last played' games to remove."
     else
         if [[ "${#last_played_array[@]}" -eq 1 ]]; then
             is_are="is"
@@ -176,22 +197,22 @@ function reset_playcount() {
             game_s="games"
         fi
         echo "> Removing the 'last played' games surplus for '$system' ..."
-        if [[ "$nth_last_played" -lt "${#last_played_array[@]}" ]]; then
-            for last_played_item in "${last_played_array[@]:$nth_last_played}"; do
+        if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
+            for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_item']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")"
-                echo "- $game_name"
+                log "- $game_name ... removed successfully!"
                 if [[ "$DEBUG_FLAG" -eq 0 ]]; then
                     xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
                 fi
             done
             echo "> Done!"
-        elif [[ "$nth_last_played" -eq "${#last_played_array[@]}" ]]; then
-            echo "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
+        elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
+            log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
         else
-            echo "ERROR: There aren't enough 'last played' games to remove." >&2
-            echo "Try lowering the '--nth' number." >&2
-            echo "Now it's set to '$nth_last_played' and there $is_are only ${#last_played_array[@]} $game_s in '$system'." >&2
+            log "ERROR: There aren't enough 'last played' games to remove." >&2
+            log "Try lowering the '--nth' number." >&2
+            log "Now it's set to '$NTH_LAST_PLAYED' and there $is_are only ${#last_played_array[@]} $game_s in '$system'." >&2
         fi
     fi
 }
@@ -213,7 +234,15 @@ function get_all_systems() {
 
 
 function install_script_retropie_menu() {
-    cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
+            cat > "$RP_MENU_DIR/$SCRIPT_NAME" << _EOF_
+#!/usr/bin/env bash
+# $SCRIPT_NAME
+
+$SCRIPT_FULL -g
+
+_EOF_
+    # chown -R "root":"root" "$RP_MENU_DIR/$SCRIPT_NAME"
+    # cp "$SCRIPT_FULL" "$RP_MENU_DIR/$SCRIPT_NAME"
 
     if ! xmlstarlet sel -t -v "/gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST" > /dev/null; then
         # Crete <newGame>
@@ -247,8 +276,8 @@ function dialog_msgbox() {
     local message="$2"
     local dialog_height="$3"
     local dialog_width="$4"
-    [[ -z "$title" ]] && log "ERROR: '${FUNCNAME[0]}' needs a title as an argument!" >&2 && exit 1
-    [[ -z "$message" ]] && log "ERROR: '${FUNCNAME[0]}' needs a message as an argument!" >&2 && exit 1
+    [[ -z "$title" ]] && echo "ERROR: '${FUNCNAME[0]}' needs a title as an argument!" && exit 1
+    [[ -z "$message" ]] && echo "ERROR: '${FUNCNAME[0]}' needs a message as an argument!" && exit 1
     [[ -z "$dialog_height" ]] && dialog_height=8
     [[ -z "$dialog_width" ]] && dialog_width="$DIALOG_WIDTH"
     dialog \
@@ -266,50 +295,73 @@ function dialog_choose_nth() {
             --title "" \
             --cancel-label "Exit" \
             --ok-label "Next" \
-            --inputbox "Enter a number to limit the games shown in 'last played' section." \
+            --inputbox "Enter a number to limit the games shown in the 'last played' section." \
             12 "$DIALOG_WIDTH" 2>&1 >/dev/tty)"
-    
-    if [[ -n "$nth" ]]; then
-        dialog_choose_systems
+    local return_value="$?"
+
+    if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+        if [[ -n "$nth" ]]; then
+            if [[ "$nth" -eq 0 ]]; then
+                dialog_msgbox "Error!" "The number must be greater than '0'."
+                dialog_choose_nth
+            else
+                NTH_LAST_PLAYED="$nth"
+                dialog_choose_systems
+            fi
+        else
+            dialog_msgbox "Error!" "You must enter a number."
+            dialog_choose_nth
+        fi
     else
-        dialog_msgbox "Error!" "You must enter a number."
-        dialog_choose_nth
+        exit
     fi
 }
 
 
 function dialog_choose_systems() {
+    local all_systems
+    local system
+    local i=1
     local options=()
     local cmd
     local choices
     local choice
 
-    cmd=(dialog \
-        --backtitle "$DIALOG_BACKTITLE" \
-        --title "" \
-        --checklist "Select systems to limit" \
-        15 "$DIALOG_WIDTH" 15)
-
     all_systems="$(get_all_systems)"
     IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
-    i=1
     for system in "${all_systems[@]}"; do
         options+=("$i" "$system" off)
         ((i++))
     done
 
+    cmd=(dialog \
+        --backtitle "$DIALOG_BACKTITLE" \
+        --title "" \
+        --cancel-label "Exit" \
+        --extra-button \
+        --extra-label "Back" \
+        --checklist "Select the systems to limit" \
+        15 "$DIALOG_WIDTH" 15)
+
     choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
+    local return_value="$?"
 
-    if [[ -z "${choices[@]}" ]]; then
-        echo "No systems selected. Aborting ..."
-        echo "Bye!"
-        exit 1
+    if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+        if [[ -z "${choices[@]}" ]]; then
+            log "No systems selected. Aborting ..." >&2
+            echo "Bye!"
+            exit 1
+        fi
+
+        IFS=" " read -r -a choices <<< "${choices[@]}"
+        for choice in "${choices[@]}"; do
+            SYSTEMS+=("${options[choice*3-2]}")
+        done
+    elif [[ "$return_value" -eq "$DIALOG_CANCEL" ]]; then
+        exit
+    elif [[ "$return_value" -eq "$DIALOG_EXTRA" ]]; then
+        dialog_choose_nth
     fi
-
-    IFS=" " read -r -a choices <<< "${choices[@]}"
-    for choice in "${choices[@]}"; do
-        SYSTEMS+=("${options[choice*3-2]}")
-    done
 }
 
 
@@ -349,9 +401,9 @@ function get_options() {
             -n|--nth)
                 check_argument "$1" "$2" || exit 1
                 shift
-                nth_last_played="$1"
-                if [[ "$nth_last_played" -eq 0 ]]; then
-                    echo "ERROR: Number of 'last played' games is set to '0'. Aborting ..."
+                NTH_LAST_PLAYED="$1"
+                if [[ "$NTH_LAST_PLAYED" -eq 0 ]]; then
+                    echo "ERROR: Number of 'last played' games is set to '0'. Aborting ..." >&2
                     echo "Bye!"
                     exit 1
                 fi
@@ -393,27 +445,26 @@ function main() {
     get_options "$@"
 
     if [[ "$GUI_FLAG" -eq 1 ]]; then
-        echo "gui"
-        # Create a log with the ouptut messages
-        exit
+        mkdir -p "$LOG_DIR"
+        touch "$LOG_FILE"
     fi
 
     if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
-        echo "No systems selected. Aborting ..."
+        log "No systems selected. Aborting ..." >&2
         echo "Bye!"
         exit 1
     else
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             echo
-            echo "DEBUG MODE: ON"
-            echo "No harm will done to the gamelists ;)"
-            echo
+            log "DEBUG MODE: ON"
+            log "No harm will done to the gamelists ;)"
+            log
         fi
-        echo "Number of 'last played' games to limit is set to '$nth_last_played'."
+        log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
         for system in "${SYSTEMS[@]}"; do
             last_played_array=()
 
-            echo
+            log
             underline "$system"
             # Find gamelist.xml path.
             find_gamelist_xml || continue
@@ -421,11 +472,24 @@ function main() {
             create_gamelist_xml_backup || continue
             # Populate array with <lastplayed> tags found and sort them in a descending order.
             get_sorted_lastplayed || continue
-            # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('nth_last_played').
+            # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('$NTH_LAST_PLAYED').
             reset_playcount || continue
         done
         echo
         echo "All done!"
+    fi
+
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        local text
+        local dialog_height="9"
+        if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+            dialog_height=12
+            text="DEBUG MODE: ON\n"
+            text+="No harm will done to the gamelists ;)\n\n"
+        fi
+        text+="All done!\n\n"
+        text+="Check the log file in '$LOG_DIR'."
+        dialog_msgbox "Info" "$text" "$dialog_height"
     fi
 }
 
