@@ -27,7 +27,7 @@ git pull
 
 `./retropie-limit-last-played-games.sh --nth 25 --systems`
 
-This will set the number of 'last played' games to limit at 25 and then it will show a dialog from where it can selected as many systems as needed.
+This will set the number of 'last played' games to limit at 25 and then it will show a dialog from where it can be selected as many systems as needed.
 
 If no options are passed, you will be prompted with a usage example:
 
@@ -40,8 +40,12 @@ Use './retropie-limit-last-played-games.sh --help' to see all the options.
 ## Options
 
 * `--help`: Print the help message and exit.
+* `--install`: Install the script in EmulationStation's RetroPie menu.
+* `--uninstall`: Uninstall the script in EmulationStation's RetroPie menu.
 * `--nth`: Set number of 'last played' games to limit per system (10 by default).
 * `--systems`: Show dialog to select systems to limit.
+* `--gui`: Start the GUI.
+* `--debug`: Set debug mode to test the script.
 * `--version`: Show script version.
 
 ## Examples
@@ -53,6 +57,22 @@ Print the help message and exit.
 #### Example
 
 `./retropie-limit-last-played-games.sh --help`
+
+### `--install`
+
+Install the script in EmulationStation's RetroPie menu.
+
+#### Example
+
+`./retropie-limit-last-played-games.sh --install`
+
+### `--uninstall`
+
+Uninstall the script in EmulationStation's RetroPie menu.
+
+#### Example
+
+`./retropie-limit-last-played-games.sh --uninstall`
 
 ### `--nth [OPTIONS]`
 
@@ -66,13 +86,35 @@ Set number of 'last played' games to limit per system (10 by default).
 
 `./retropie-limit-last-played-games.sh --nth 25`
 
+The '--nth' option won't do anything ny itself. It always has to be accompanied, at least, by `--systems`.
+
 ### `--systems`
 
-Show dialog to select systems to limit.
+Show a dialog to select systems to limit.
 
 #### Example
 
 `./retropie-limit-last-played-games.sh --systems`
+
+### `--gui`
+
+Start the GUI.
+
+It lets you use the script in a more friendly way.
+
+#### Example
+
+`./retropie-limit-last-played-games.sh --gui`
+
+### `--debug`
+
+Set debug mode to test the script.
+
+No harm will done to the gamelists ;)
+
+#### Example
+
+`./retropie-limit-last-played-games.sh --debug`
 
 ### `--version`
 
