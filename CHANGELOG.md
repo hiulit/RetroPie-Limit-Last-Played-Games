@@ -20,7 +20,7 @@
 
 ### Changed
 
-* Refactored the code to create backups.*
+* Refactored the code to create backups.
 * Added more 'error/success' output messages.
 * Better control of what games to process.
 
