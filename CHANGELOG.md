@@ -16,7 +16,13 @@
 ### Fixed
 
 * Uncommented code preventing to actually remove 'last played' games.
-* Fixed [#1 - Only show systems that have a gamelist.xml](https://github.com/hiulit/RetroPie-Limit-Last-Played-Games/issues/1)
+* Fixed [#1 - Only show systems that have a gamelist.xml](https://github.com/hiulit/RetroPie-Limit-Last-Played-Games/issues/1).
+
+### Changed
+
+* Refactored the code to create backups.*
+* Added more 'error/success' output messages.
+* Better control of what games to process.
 
 
 ## [1.0.0] - 2018-03-01
