@@ -23,7 +23,7 @@ git pull
 ./retropie-limit-last-played-games.sh [OPTIONS]
 ```
 
-### Example
+### Examples
 
 `./retropie-limit-last-played-games.sh --nth 25 --systems`
 
