@@ -78,7 +78,7 @@ You'll find it as 'Limit Last Played Games'.
 
 ### `--uninstall`
 
-Uninstall the script in EmulationStation's RetroPie menu.
+Uninstall the script from EmulationStation's RetroPie menu.
 
 #### Example
 
