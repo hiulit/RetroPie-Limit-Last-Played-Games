@@ -20,9 +20,9 @@
 
 ### Changed
 
-* Refactored the code to create backups.
-* Added more 'error/success' output messages.
-* Better control of what games to process.
+* Refactored the code to create backups. Now the folder is called `gamelist-backups` (inside the `$SYSTEM` folder) and contains all the game lists backups, named `[DATE]-gamelist-backup.xml`.
+* Added more `error/success` output messages.
+* Better control of what games have to be processed.
 
 
 ## [1.0.0] - 2018-03-01
