@@ -16,6 +16,7 @@
 ### Fixed
 
 * Uncommented code preventing to actually remove 'last played' games.
+* Fixed [#1 - Only show systems that have a gamelist.xml](https://github.com/hiulit/RetroPie-Limit-Last-Played-Games/issues/1)
 
 
 ## [1.0.0] - 2018-03-01
