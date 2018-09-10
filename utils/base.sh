@@ -9,14 +9,10 @@ function is_retropie() {
 
 
 function log() {
-    if [[ -f "$LOG_FILE" ]]; then
-        if [[ "$GUI_FLAG" -eq 1 ]]; then
-            echo "$*" >> "$LOG_FILE"
-        fi
-        echo "$*"
-    else
-        echo "ERROR: Couldn't find the log file." >&2
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        echo "$*" >> "$LOG_FILE"
     fi
+    echo "$*"
 }
 
 
