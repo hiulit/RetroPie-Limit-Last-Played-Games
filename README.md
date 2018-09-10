@@ -70,6 +70,8 @@ Print the help message and exit.
 
 Install the script in EmulationStation's RetroPie menu.
 
+You'll find it as 'Limit Last Played Games'.
+
 #### Example
 
 `./retropie-limit-last-played-games.sh --install`
