@@ -20,7 +20,7 @@
 
 ### Changed
 
-* Refactored the code to create backups. Now the folder is called `gamelist-backups` (inside the `$SYSTEM` folder) and contains all the game lists backups, named `[DATE]-gamelist-backup.xml`.
+* Refactored the code to create backups. Now the folder is called `gamelist-backups` (inside the `$SYSTEM_ROMS` folder) and contains all the game lists backups, named `[DATE]-gamelist-backup.xml`.
 * Added more `error/success` output messages.
 * Better control of what games have to be processed.
 
