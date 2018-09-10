@@ -28,7 +28,7 @@ readonly RP_CONFIGS_DIR="/opt/retropie/configs"
 readonly ES_GAMELISTS_DIR="$RP_CONFIGS_DIR/all/emulationstation/gamelists"
 readonly RP_MENU_GAMELIST="$ES_GAMELISTS_DIR/retropie/gamelist.xml"
 
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="2.0.0"
 readonly SCRIPT_DIR="$(cd "$(dirname $0)" && pwd)"
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_FULL="$SCRIPT_DIR/$SCRIPT_NAME"
