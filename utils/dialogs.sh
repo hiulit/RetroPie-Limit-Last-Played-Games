@@ -58,7 +58,7 @@ function dialog_choose_nth() {
             dialog_choose_nth
         fi
     else
-        exit
+        exit 0
     fi
 }
 
@@ -75,13 +75,21 @@ function dialog_choose_all_systems_or_systems() {
         2 "All systems"
     )
     menu_text="Choose an option."
-    cmd=(dialog \
-        --backtitle "$DIALOG_BACKTITLE" \
-        --title "$SCRIPT_TITLE" \
-        --cancel-label "Exit" \
-        --extra-button \
-        --extra-label "Back" \
-        --menu "$menu_text" 15 "$DIALOG_WIDTH" 15)
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        cmd=(dialog \
+            --backtitle "$DIALOG_BACKTITLE" \
+            --title "$SCRIPT_TITLE" \
+            --cancel-label "Exit" \
+            --extra-button \
+            --extra-label "Back" \
+            --menu "$menu_text" 15 "$DIALOG_WIDTH" 15)
+    else
+        cmd=(dialog \
+            --backtitle "$DIALOG_BACKTITLE" \
+            --title "$SCRIPT_TITLE" \
+            --cancel-label "Exit" \
+            --menu "$menu_text" 15 "$DIALOG_WIDTH" 15)
+    fi
     choice="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
     local return_value="$?"
 
@@ -99,7 +107,7 @@ function dialog_choose_all_systems_or_systems() {
             dialog_msgbox "Error!" "Choose an option."
         fi
     elif [[ "$return_value" -eq "$DIALOG_CANCEL" ]]; then
-        exit
+        exit 0
     elif [[ "$return_value" -eq "$DIALOG_EXTRA" ]]; then
         dialog_choose_nth
     fi
@@ -162,7 +170,7 @@ function dialog_choose_systems() {
             SYSTEMS+=("${options[choice*3-2]}")
         done
     elif [[ "$return_value" -eq "$DIALOG_CANCEL" ]]; then
-        exit
+        exit 0
     elif [[ "$return_value" -eq "$DIALOG_EXTRA" ]]; then
         dialog_choose_all_systems_or_systems
     fi

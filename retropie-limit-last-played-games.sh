@@ -258,7 +258,7 @@ function get_options() {
                 ;;
 #H -s, --systems            Show a dialog to select the system/s to limit.
             -s|--systems)
-                dialog_choose_systems
+                dialog_choose_all_systems_or_systems
                 ;;
 #H -g, --gui                Start the GUI.
             -g|--gui)
