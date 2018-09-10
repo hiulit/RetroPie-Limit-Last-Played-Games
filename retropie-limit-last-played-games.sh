@@ -17,84 +17,78 @@
 user="$SUDO_USER"
 [[ -z "$user" ]] && user="$(id -un)"
 
-home="$(eval echo ~$user)"
+# home="$(eval echo ~$user)"
+home="$(find /home -type d -name RetroPie -print -quit 2> /dev/null)"
+home="${home%/RetroPie}"
 
 readonly RP_DIR="$home/RetroPie"
 readonly RP_ROMS_DIR="$RP_DIR/roms"
+readonly RP_MENU_DIR="$RP_DIR/retropiemenu"
 readonly RP_CONFIGS_DIR="/opt/retropie/configs"
 readonly ES_GAMELISTS_DIR="$RP_CONFIGS_DIR/all/emulationstation/gamelists"
+readonly RP_MENU_GAMELIST="$ES_GAMELISTS_DIR/retropie/gamelist.xml"
 
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="2.0.0"
 readonly SCRIPT_DIR="$(cd "$(dirname $0)" && pwd)"
 readonly SCRIPT_NAME="$(basename "$0")"
-readonly SCRIPT_FULL="$SCRIPT_DIR/SCRIPT_NAME"
+readonly SCRIPT_FULL="$SCRIPT_DIR/$SCRIPT_NAME"
 readonly SCRIPT_TITLE="Retropie Limit Last Played Games"
 readonly SCRIPT_DESCRIPTION="A tool for RetroPie to limit the number of 'last played' games."
+
+readonly LOG_DIR="$SCRIPT_DIR/logs"
+readonly LOG_FILE="$LOG_DIR/$(date +%F-%T).log"
 
 
 # Variables #######################################
 
-# Add as many systems as needed.
-SYSTEMS=()
+readonly gamelist_backup_dir="gamelist-backups"
+readonly gamelist_backup_file="$gamelist_backup_dir.xml"
 
-# Number of 'last played' games to limit per system (10 by default).
-nth_last_played=10
+readonly rp_menu_properties=(
+    "path ./$SCRIPT_NAME"
+    "name Limit Last Played Games"
+    "desc Limit the number of 'last played' games per system."
+)
+
+## Flags
+
+GUI_FLAG=0
+DEBUG_FLAG=0
+
+
+# Configuration  ##################################
+
+SYSTEMS=() # Array of systems. Add as many as needed. Wrap the systems in double quotes "" and use 1 space for separation.
+NTH_LAST_PLAYED=10 # Number of 'last played' games to limit per system (10 by default).
+
+
+# External resources ######################################
+
+source "$SCRIPT_DIR/utils/base.sh"
+source "$SCRIPT_DIR/utils/dialogs.sh"
 
 
 # Functions ######################################
 
-function is_retropie() {
-    [[ -d "$RP_DIR" && -d "$home/.emulationstation" && -d "/opt/retropie" ]]
-}
-
-
-function check_argument() {
-    # This method doesn't accept arguments starting with '-'.
-    if [[ -z "$2" || "$2" =~ ^- ]]; then
-        echo >&2
-        echo "ERROR: '$1' is missing an argument." >&2
-        echo >&2
-        echo "Try '$0 --help' for more info." >&2
-        echo >&2
+function check_lastplayed_exists() {
+    if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
+        log "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'." >&2
         return 1
     fi
 }
 
 
-function usage() {
-    echo
-    underline "$SCRIPT_TITLE"
-    echo "$SCRIPT_DESCRIPTION"
-    echo
-    echo "USAGE: $0 [OPTIONS]"
-    echo
-    echo "Use '$0 --help' to see all the options."
-}
-
-
-function underline() {
-    if [[ -z "$1" ]]; then
-        echo "ERROR: '$FUNCNAME' needs a message as an argument!" >&2
-        exit 1
-    fi
-    local dashes
-    local message="$1"
-    echo "$message"
-    for ((i=1; i<="${#message}"; i+=1)); do [[ -n "$dashes" ]] && dashes+="-" || dashes="-"; done && echo "$dashes"
-}
-
-
 function find_gamelist_xml() {
     if [[ ! -f "$RP_ROMS_DIR/$system/gamelist.xml" ]]; then
-        echo "ERROR: '$RP_ROMS_DIR/$system/gamelist.xml' doesn't exist!" >&2
-        echo "> Trying '$ES_GAMELISTS_DIR/$system/gamelist.xml' ..."
+        log "ERROR: '$RP_ROMS_DIR/$system/gamelist.xml' doesn't exist!" >&2
+        log "> Trying '$ES_GAMELISTS_DIR/$system/gamelist.xml' ..." >&2
         if [[ ! -f "$ES_GAMELISTS_DIR/$system/gamelist.xml" ]]; then
-            echo "ERROR: '$ES_GAMELISTS_DIR/$system/gamelist.xml' doesn't exist!" >&2
-            echo "ERROR: Couldn't find any 'gamelist.xml' for '$system'." >&2
+            log "ERROR: '$ES_GAMELISTS_DIR/$system/gamelist.xml' doesn't exist!" >&2
+            log "ERROR: Couldn't find any 'gamelist.xml' for '$system'." >&2
             pos="$((${#SYSTEMS[@]} - 1))"
             last="${SYSTEMS[$pos]}"
             [[ "$system" != "$last" ]] && echo "> Continuing with the next system ..."
-            continue
+            return 1
         else
             gamelist_path="$ES_GAMELISTS_DIR/$system/gamelist.xml"
             echo "'gamelist.xml' for '$system' found!"
@@ -107,52 +101,66 @@ function find_gamelist_xml() {
 
 
 function create_gamelist_xml_backup() {
-    echo "> Creating 'gamelist-backup.xml' for '$system' ..."
-    if [[ ! -f "$(dirname "$gamelist_path")/gamelist-backup.xml" ]]; then
-        cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/gamelist-backup.xml" > /dev/null
+    if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+        echo "> Creating '$gamelist_backup_file' for '$system' ..."
+        mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
+        cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
         return_value="$?"
         if [[ "$return_value" -eq 0 ]]; then
-            echo "'gamelist-backup.xml' for '$system' created successfully!"
+            echo "'$gamelist_backup_file' for '$system' created successfully!"
         else
-            echo "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
-            continue
+            log "ERROR: Couldn't copy '$(dirname "$gamelist_path")/gamelist.xml'!" >&2
+            return 1
         fi
-    else
-        echo "There is already a 'gamelist-backup.xml' for '$system'."
     fi
 }
 
 
 function get_sorted_lastplayed() {
+    check_lastplayed_exists
     while read -r line; do
-        [[ -n "$line" ]] && last_played_array+=("$line")
+        if [[ -n "$line" ]]; then
+            # Add only the 'last played' games with a 'playcount' greater than 0.
+            if [[ "$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
+                last_played_array+=("$line")
+            fi
+        fi       
     done < <(sort -r <(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml"))
 }
 
 
 function reset_playcount() {
     if [[ "${#last_played_array[@]}" -eq 0 ]]; then
-        echo "ERROR: No 'last played' games to remove." >&2
+        log "No 'last played' games to remove."
     else
-        echo "> Removing 'last played' games for '$system' ..."
-        if [[ "$nth_last_played" -lt "${#last_played_array[@]}" ]]; then
-            for last_played_item in "${last_played_array[@]:$nth_last_played}"; do
-                echo "$last_played_item"
-                #~ xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+        if [[ "${#last_played_array[@]}" -eq 1 ]]; then
+            is_are="is"
+            game_s="game"
+        else
+            is_are="are"
+            game_s="games"
+        fi
+        echo "> Removing the 'last played' games surplus for '$system' ..."
+        if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
+            for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
+                local game_name
+                game_name="$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_item']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")"
+                log "- $game_name ... removed successfully!"
+                if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+                    xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                fi
             done
             echo "> Done!"
+        elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
+            log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
         else
-            echo "ERROR: There aren't enough 'last played' games to remove." >&2
-            echo "Try lowering the '--nth' number." >&2
-            if [[ "${#last_played_array[@]}" -eq 1 ]]; then
-                is_are="is"
-            else
-                is_are="are"
-            fi
-            echo "Now it's set to '$nth_last_played' and there $is_are only ${#last_played_array[@]} games in '$system'." >&2
+            log "ERROR: There aren't enough 'last played' games to remove." >&2
+            log "Try lowering the '--nth' number." >&2
+            log "Now it's set to '$NTH_LAST_PLAYED' and there $is_are only ${#last_played_array[@]} $game_s in '$system'." >&2
         fi
     fi
 }
+
 
 function get_all_systems() {
     local all_systems=()
@@ -167,6 +175,43 @@ function get_all_systems() {
     done
     echo "${all_systems[@]}"
 }
+
+
+function install_script_retropie_menu() {
+            cat > "$RP_MENU_DIR/$SCRIPT_NAME" << _EOF_
+#!/usr/bin/env bash
+# $SCRIPT_NAME
+
+$SCRIPT_FULL -g
+
+_EOF_
+
+    if ! xmlstarlet sel -t -v "/gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST" > /dev/null; then
+        # Crete <newGame>
+        xmlstarlet ed -L -s "/gameList" -t elem -n "newGame" -v "" "$RP_MENU_GAMELIST"
+        for node in "${rp_menu_properties[@]}"; do
+            local key
+            local value
+            key="$(echo $node | grep  -Eo "^[^ ]+")"
+            value="$(echo $node | grep -Po "(?<= ).*")"
+            if [[ -n "$value" ]]; then
+                # Add nodes from $rp_menu_properties to <newGame>
+                xmlstarlet ed -L -s "/gameList/newGame" -t elem -n "$key" -v "$value" "$RP_MENU_GAMELIST"
+            fi
+        done
+        # Rename <newGame> to <game>
+        xmlstarlet ed -L -r "/gameList/newGame" -v "game" "$RP_MENU_GAMELIST"
+    fi
+    echo "Script installed successfully!"
+}
+
+
+function uninstall_script_retropie_menu() {
+    rm "$RP_MENU_DIR/$SCRIPT_NAME"
+    xmlstarlet ed -L -d "//gameList/game[path='./$SCRIPT_NAME']" "$RP_MENU_GAMELIST"
+    echo "Script uninstalled successfully!"
+}
+
 
 function get_options() {
     if [[ -z "$1" ]]; then
@@ -190,37 +235,39 @@ function get_options() {
                 echo
                 exit 0
                 ;;
+#H -i, --install            Install the script in EmulationStation's RetroPie menu.
+            -i|--install)
+                install_script_retropie_menu
+                exit 0
+                ;;
+#H -u, --uninstall          Uninstall the script from EmulationStation's RetroPie menu.
+            -u|--uninstall)
+                uninstall_script_retropie_menu
+                exit 0
+                ;;
 #H -n, --nth [number]       Set number of 'last played' games to limit per system (10 by default).
             -n|--nth)
                 check_argument "$1" "$2" || exit 1
                 shift
-                nth_last_played="$1"
-                ;;
-#H -s, --systems            Show dialog to select systems to limit.
-            -s|--systems)
-                cmd=(dialog \
-                    --backtitle "$SCRIPT_TITLE" \
-                    --checklist "Select systems to limit" 15 50 15)
-
-                all_systems="$(get_all_systems)"
-                IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
-                i=1
-                for system in "${all_systems[@]}"; do
-                    options+=("$i" "$system" off)
-                    ((i++))
-                done
-
-                choices="$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)"
-
-                if [[ -z "${choices[@]}" ]]; then
-                    echo "No systems selected."
+                NTH_LAST_PLAYED="$1"
+                if [[ "$NTH_LAST_PLAYED" -eq 0 ]]; then
+                    echo "ERROR: Number of 'last played' games is set to '0'. Aborting ..." >&2
+                    echo "Bye!"
                     exit 1
                 fi
-
-                IFS=" " read -r -a choices <<< "${choices[@]}"
-                for choice in "${choices[@]}"; do
-                    SYSTEMS+=("${options[choice*3-2]}")
-                done
+                ;;
+#H -s, --systems            Show a dialog to select the system/s to limit.
+            -s|--systems)
+                dialog_choose_all_systems_or_systems
+                ;;
+#H -g, --gui                Start the GUI.
+            -g|--gui)
+                GUI_FLAG=1
+                dialog_choose_nth
+                ;;
+#H -d, --debug              Set debug mode to test the script.
+            -d|--debug)
+                DEBUG_FLAG=1
                 ;;
 #H -v, --version            Show script version.
             -v|--version)
@@ -245,23 +292,53 @@ function main() {
 
     get_options "$@"
 
-    echo "Number of 'last played' games to limit is set to '$nth_last_played'."
-    for system in "${SYSTEMS[@]}"; do
-        last_played_array=()
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        mkdir -p "$LOG_DIR"
+        touch "$LOG_FILE"
+    fi
 
+    if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
+        # log "No systems selected. Aborting ..." >&2
+        # echo "Bye!"
+        exit 0
+    else
+        if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+            echo
+            log "DEBUG MODE: ON"
+            log "No harm will done to the gamelists ;)"
+            log
+        fi
+        log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
+        for system in "${SYSTEMS[@]}"; do
+            last_played_array=()
+
+            log
+            underline "$system"
+            # Find gamelist.xml path.
+            find_gamelist_xml || continue
+            #Create backup for gamelist.xml.
+            create_gamelist_xml_backup || continue
+            # Populate array with <lastplayed> tags found and sort them in a descending order.
+            get_sorted_lastplayed || continue
+            # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('$NTH_LAST_PLAYED').
+            reset_playcount || continue
+        done
         echo
-        underline "$system"
-        # Find gamelist.xml path.
-        find_gamelist_xml
-        #Create backup for gamelist.xml.
-        create_gamelist_xml_backup
-        # Populate array with <lastplayed> tags found and sort them in a descending order.
-        get_sorted_lastplayed
-        # Set <playcount> value to '0' for all games in 'last_played_array' that are above the number of games to limit ('nth_last_played').
-        reset_playcount
-    done
-    echo
-    echo "Done!"
+        echo "All done!"
+    fi
+
+    if [[ "$GUI_FLAG" -eq 1 ]]; then
+        local text
+        local dialog_height="9"
+        if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+            dialog_height=12
+            text="DEBUG MODE: ON\n"
+            text+="No harm will done to the gamelists ;)\n\n"
+        fi
+        text+="All done!\n\n"
+        text+="Check the log file in '$LOG_DIR'."
+        dialog_msgbox "Info" "$text" "$dialog_height"
+    fi
 }
 
 main "$@"
