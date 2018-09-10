@@ -49,7 +49,7 @@ Use './retropie-limit-last-played-games.sh --help' to see all the options.
 
 * `--help`: Print the help message and exit.
 * `--install`: Install the script in EmulationStation's RetroPie menu.
-* `--uninstall`: Uninstall the script in EmulationStation's RetroPie menu.
+* `--uninstall`: Uninstall the script from EmulationStation's RetroPie menu.
 * `--nth`: Set number of 'last played' games to limit per system (10 by default).
 * `--systems`: Show dialog to select systems to limit.
 * `--gui`: Start the GUI.

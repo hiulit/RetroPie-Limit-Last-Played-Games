@@ -8,7 +8,7 @@
 
 ### Added
 
-* Option to install/uninstall the script in EmulationStation's RetroPie menu.
+* Option to install/Uninstall the script from EmulationStation's RetroPie menu.
 * GUI mode.
 * Debug mode.
 * Log files.
