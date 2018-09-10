@@ -100,7 +100,7 @@ The '--nth' option won't do anything by itself. It always has to be accompanied,
 
 ### `--systems`
 
-Show a dialog to select systems to limit.
+Show a dialog to select the system/s to limit.
 
 #### Example
 

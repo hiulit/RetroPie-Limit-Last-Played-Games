@@ -256,7 +256,7 @@ function get_options() {
                     exit 1
                 fi
                 ;;
-#H -s, --systems            Show a dialog to select systems to limit.
+#H -s, --systems            Show a dialog to select the system/s to limit.
             -s|--systems)
                 dialog_choose_systems
                 ;;
