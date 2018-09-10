@@ -298,9 +298,9 @@ function main() {
     fi
 
     if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
-        log "No systems selected. Aborting ..." >&2
-        echo "Bye!"
-        exit 1
+        # log "No systems selected. Aborting ..." >&2
+        # echo "Bye!"
+        exit 0
     else
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             echo
