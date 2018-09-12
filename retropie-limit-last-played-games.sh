@@ -118,14 +118,16 @@ function create_gamelist_xml_backup() {
 
 function get_sorted_lastplayed() {
     check_lastplayed_exists
-    while read -r line; do
-        if [[ -n "$line" ]]; then
-            # Add only the 'last played' games with a 'playcount' greater than 0.
-            if [[ "$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
-                last_played_array+=("$line")
-            fi
+    while read -r last_played_line; do
+        if [[ -n "$last_played_line" ]]; then
+            while read -r game_line; do
+                # Add only the 'last played' games with a 'playcount' greater than 0.
+                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name='$game_line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
+                    last_played_array+=("$game_line")
+                fi
+            done < <(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_line']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")
         fi       
-    done < <(sort -r <(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml"))
+    done < <(sort -u -r <(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml"))
 }
 
 
@@ -142,15 +144,23 @@ function reset_playcount() {
         fi
         echo "> Removing the 'last played' games surplus for '$system' ..."
         if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
+            # Games to remove.
             for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
                 local game_name
-                game_name="$(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_item']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")"
+                game_name="$last_played_item"
                 log "- $game_name ... removed successfully!"
                 if [[ "$DEBUG_FLAG" -eq 0 ]]; then
-                    xmlstarlet ed -L -u "/gameList/game[lastplayed[contains(text(),'$last_played_item')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                    xmlstarlet ed -L -u "/gameList/game[name[contains(text(),'$game_name')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
                 fi
             done
             echo "> Done!"
+            # Games to show in 'last played' section.
+            log "Games that will be shown in the 'last played' section:"
+            for last_played_item in "${last_played_array[@]:0:$NTH_LAST_PLAYED}"; do
+                local game_name
+                game_name="$last_played_item"
+                log "- $game_name"
+            done
         elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
             log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
         else
@@ -310,7 +320,7 @@ function main() {
         fi
         log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
         for system in "${SYSTEMS[@]}"; do
-            last_played_array=()
+            local last_played_array=()
 
             log
             underline "$system"
@@ -338,6 +348,14 @@ function main() {
         text+="All done!\n\n"
         text+="Check the log file in '$LOG_DIR'."
         dialog_msgbox "Info" "$text" "$dialog_height"
+    fi
+    # Check if EmulationStation is running
+    if pidof emulationstation > /dev/null; then
+        dialog_yesno "Info" "In order to see the changes applied to the game lists, EmulationStation need to be restarted.\n\nWould you like to restart EmulationStation?"
+        local return_value="$?"
+        if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+            restart_ES
+        fi
     fi
 }
 
