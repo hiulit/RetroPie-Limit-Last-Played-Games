@@ -4,6 +4,17 @@
 
 * Up to date
 
+## [2.1.0] - 2018-09-12
+
+### Added
+
+* Dialog asking if the user wants to restart EmulationStation when the script is done.
+* Output message for the games that will be shown in the 'last played' section.
+
+### Fixed
+
+* When there are duplicated <lastplayed> tags in different games the script crashes. Now, if the scripts find duplicates, it looks for the game's name (it should be different).
+
 ## [2.0.0] - 2018-09-07
 
 ### Added
