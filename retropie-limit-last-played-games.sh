@@ -341,6 +341,14 @@ function main() {
         text+="Check the log file in '$LOG_DIR'."
         dialog_msgbox "Info" "$text" "$dialog_height"
     fi
+    # Check if EmulationStation is running
+    if pidof emulationstation > /dev/null; then
+        dialog_yesno "Info" "In order to see the changes applied to the game lists, EmulationStation need to be restarted.\n\nWould you like to restart EmulationStation?"
+        local return_value="$?"
+        if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+            restart_ES
+        fi
+    fi
 }
 
 main "$@"

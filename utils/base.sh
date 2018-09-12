@@ -7,6 +7,13 @@ function is_retropie() {
     [[ -d "$RP_DIR" && -d "$home/.emulationstation" && -d "/opt/retropie" ]]
 }
 
+function restart_ES() {
+    local restart_file="/tmp/es-restart"
+    touch "$restart_file"
+    chown -R "$user":"$user" "$restart_file"
+    kill $(pidof emulationstation)
+}
+
 
 function log() {
     if [[ "$GUI_FLAG" -eq 1 ]]; then
