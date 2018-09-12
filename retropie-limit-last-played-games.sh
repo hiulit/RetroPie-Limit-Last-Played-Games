@@ -144,6 +144,7 @@ function reset_playcount() {
         fi
         echo "> Removing the 'last played' games surplus for '$system' ..."
         if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
+            # Games to remove.
             for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
@@ -153,6 +154,13 @@ function reset_playcount() {
                 fi
             done
             echo "> Done!"
+            # Games to show in 'last played' section.
+            log "Games that will be shown in the 'last played' section:"
+            for last_played_item in "${last_played_array[@]:0:$NTH_LAST_PLAYED}"; do
+                local game_name
+                game_name="$last_played_item"
+                log "- $game_name"
+            done
         elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
             log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
         else
@@ -312,7 +320,7 @@ function main() {
         fi
         log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
         for system in "${SYSTEMS[@]}"; do
-            last_played_array=()
+            local last_played_array=()
 
             log
             underline "$system"
