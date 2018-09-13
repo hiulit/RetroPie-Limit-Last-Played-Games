@@ -122,7 +122,7 @@ function get_sorted_lastplayed() {
         if [[ -n "$last_played_line" ]]; then
             while read -r game_line; do
                 # Add only the 'last played' games with a 'playcount' greater than 0.
-                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name='$game_line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
+                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name=\"$game_line\"]/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
                     last_played_array+=("$game_line")
                 fi
             done < <(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_line']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")
@@ -148,9 +148,9 @@ function reset_playcount() {
             for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
-                log "- $game_name ... removed successfully!"
+                log "- \"$game_name\" ... removed successfully!"
                 if [[ "$DEBUG_FLAG" -eq 0 ]]; then
-                    xmlstarlet ed -L -u "/gameList/game[name[contains(text(),'$game_name')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                    xmlstarlet ed -L -u "/gameList/game[name[contains(text(),\"$game_name\")]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
                 fi
             done
             echo "> Done!"
@@ -159,7 +159,7 @@ function reset_playcount() {
             for last_played_item in "${last_played_array[@]:0:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
-                log "- $game_name"
+                log "- \"$game_name\""
             done
         elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
             log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
