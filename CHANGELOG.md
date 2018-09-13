@@ -8,9 +8,9 @@
 
 ## Fixed
 
-* Issue with duplicate game names but different `<lastplayed>` tags in `gamelist.xml'`. Now the script takes both the game name and its `<lastplayed>` tag to avoid duplicates. **If there are more than one game with same name and `<lastplayed>` tag, the script won't work.**
-* Escape game names with single quotes in `gamelist.xml'`.
-* Escape ampersands (`&`) in `gamelist.xml'`.
+* Issue with duplicate game names but different `<lastplayed>` tags in `gamelist.xml`. Now the script takes both the game name and its `<lastplayed>` tag to avoid duplicates. **If there are more than one game with same name and `<lastplayed>` tag, the script won't work.**
+* Escape game names with single quotes in `gamelist.xml`.
+* Escape ampersands (`&`) in `gamelist.xml`.
 
 ## [2.1.0] - 2018-09-12
 
