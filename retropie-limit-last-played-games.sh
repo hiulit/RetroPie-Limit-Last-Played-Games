@@ -70,6 +70,10 @@ source "$SCRIPT_DIR/utils/dialogs.sh"
 
 # Functions ######################################
 
+function escape_ampersands() {
+    sed -i 's/&/&amp;/g' "$(dirname "$gamelist_path")/gamelist.xml"
+}
+
 function check_lastplayed_exists() {
     if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
         log "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'." >&2
@@ -118,11 +122,13 @@ function create_gamelist_xml_backup() {
 
 function get_sorted_lastplayed() {
     check_lastplayed_exists
+    local last_played_line
+    local game_line
     while read -r last_played_line; do
         if [[ -n "$last_played_line" ]]; then
             while read -r game_line; do
                 # Add only the 'last played' games with a 'playcount' greater than 0.
-                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name='$game_line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
+                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name=\"$game_line\"][lastplayed='$last_played_line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
                     last_played_array+=("$game_line")
                 fi
             done < <(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_line']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")
@@ -148,9 +154,9 @@ function reset_playcount() {
             for last_played_item in "${last_played_array[@]:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
-                log "- $game_name ... removed successfully!"
+                log "- \"$game_name\" ... removed successfully!"
                 if [[ "$DEBUG_FLAG" -eq 0 ]]; then
-                    xmlstarlet ed -L -u "/gameList/game[name[contains(text(),'$game_name')]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
+                    xmlstarlet ed -L -u "/gameList/game[name[contains(text(),\"$game_name\")]]/playcount" -v "0" "$(dirname "$gamelist_path")/gamelist.xml"
                 fi
             done
             echo "> Done!"
@@ -159,7 +165,7 @@ function reset_playcount() {
             for last_played_item in "${last_played_array[@]:0:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
-                log "- $game_name"
+                log "- \"$game_name\""
             done
         elif [[ "$NTH_LAST_PLAYED" -eq "${#last_played_array[@]}" ]]; then
             log "WHOOPS! There $is_are already only ${#last_played_array[@]} $game_s in '$system'. Nothing do to here ..."
@@ -326,6 +332,8 @@ function main() {
             underline "$system"
             # Find gamelist.xml path.
             find_gamelist_xml || continue
+            # Escape ampersands in gamelist.xml
+            escape_ampersands || continue
             #Create backup for gamelist.xml.
             create_gamelist_xml_backup || continue
             # Populate array with <lastplayed> tags found and sort them in a descending order.
