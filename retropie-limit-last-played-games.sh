@@ -122,11 +122,13 @@ function create_gamelist_xml_backup() {
 
 function get_sorted_lastplayed() {
     check_lastplayed_exists
+    local last_played_line
+    local game_line
     while read -r last_played_line; do
         if [[ -n "$last_played_line" ]]; then
             while read -r game_line; do
                 # Add only the 'last played' games with a 'playcount' greater than 0.
-                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name=\"$game_line\"]/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
+                if [[ "$(xmlstarlet sel -t -v "/gameList/game[name=\"$game_line\"][lastplayed='$last_played_line']/playcount" -n "$(dirname "$gamelist_path")/gamelist.xml")" -ne 0 ]]; then
                     last_played_array+=("$game_line")
                 fi
             done < <(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_line']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")
