@@ -70,6 +70,10 @@ source "$SCRIPT_DIR/utils/dialogs.sh"
 
 # Functions ######################################
 
+function escape_ampersands() {
+    sed -i 's/&/&amp;/g' "$(dirname "$gamelist_path")/gamelist.xml"
+}
+
 function check_lastplayed_exists() {
     if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
         log "ERROR: No <lastplayed> tag found in '"$(dirname "$gamelist_path")/gamelist.xml"'." >&2
@@ -326,6 +330,8 @@ function main() {
             underline "$system"
             # Find gamelist.xml path.
             find_gamelist_xml || continue
+            # Escape ampersands in gamelist.xml
+            escape_ampersands || continue
             #Create backup for gamelist.xml.
             create_gamelist_xml_backup || continue
             # Populate array with <lastplayed> tags found and sort them in a descending order.
