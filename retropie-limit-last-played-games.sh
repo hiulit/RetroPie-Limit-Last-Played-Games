@@ -132,7 +132,7 @@ function get_sorted_lastplayed() {
                     last_played_array+=("$game_line")
                 fi
             done < <(xmlstarlet sel -t -v "/gameList/game[lastplayed='$last_played_line']/name" -n "$(dirname "$gamelist_path")/gamelist.xml")
-        fi       
+        fi
     done < <(sort -u -r <(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml"))
 }
 
