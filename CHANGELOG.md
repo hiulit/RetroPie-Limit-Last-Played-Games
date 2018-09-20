@@ -4,9 +4,19 @@
 
 * Up to date
 
+## [2.1.2] - 2018-09-20
+
+### Fixed
+
+* Escape special characters function.
+
+### Added
+
+* Validate XML function.
+
 ## [2.1.1] - 2018-09-13
 
-## Fixed
+### Fixed
 
 * Issue with duplicate game names but different `<lastplayed>` tags in `gamelist.xml`. Now the script takes both the game name and its `<lastplayed>` tag to avoid duplicates. **If there are more than one game with same name and `<lastplayed>` tag, the script won't work.**
 * Escape game names with single quotes in `gamelist.xml`.
