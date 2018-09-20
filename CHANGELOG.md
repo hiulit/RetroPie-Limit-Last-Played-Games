@@ -10,7 +10,7 @@
 
 * Escape special characters function.
 
-### Add
+### Added
 
 * Validate XML function.
 
