@@ -70,9 +70,23 @@ source "$SCRIPT_DIR/utils/dialogs.sh"
 
 # Functions ######################################
 
-function escape_ampersands() {
-    sed -i 's/&/&amp;/g' "$(dirname "$gamelist_path")/gamelist.xml"
+function escape_xml() {
+    if [[ -z "$1" ]]; then
+        echo "ERROR: '$FUNCNAME' needs an XML as an argument!" >&2
+        exit 1
+    fi
+    xmlstarlet esc "$1" > /dev/null
 }
+
+
+function validate_xml() {
+    if [[ -z "$1" ]]; then
+        echo "ERROR: '$FUNCNAME' needs an XML as an argument!" >&2
+        exit 1
+    fi
+    xmlstarlet val "$1" > /dev/null
+}
+
 
 function check_lastplayed_exists() {
     if [[ "$(xmlstarlet sel -t -v "/gameList/game/lastplayed" -n "$(dirname "$gamelist_path")/gamelist.xml")" == "" ]]; then
@@ -100,6 +114,23 @@ function find_gamelist_xml() {
     else
         gamelist_path="$RP_ROMS_DIR/$system/gamelist.xml"
         echo "'gamelist.xml' for '$system' found!"
+
+        # Escape special characters.
+        echo "> Escaping special characters for the 'gamelist.xml' for '$system' ..."
+        if escape_xml "$gamelist_path"; then
+            echo "Special characters for the 'gamelist.xml' for '$system' escaped successfully!"
+        else
+            log "ERROR: Couldn't escape special characters for the 'gamelist.xml' for '$system'." >&2
+            exit 1
+        fi
+        # Validate XML.
+        echo "> Validating 'gamelist.xml' for '$system' ..."
+        if validate_xml "$gamelist_path"; then
+            echo "'gamelist.xml' for '$system' validated successfully!"
+        else
+            log "ERROR: Couldn't validate 'gamelist.xml' for '$system'." >&2
+            exit 1
+        fi
     fi
 }
 
@@ -332,8 +363,6 @@ function main() {
             underline "$system"
             # Find gamelist.xml path.
             find_gamelist_xml || continue
-            # Escape ampersands in gamelist.xml
-            escape_ampersands || continue
             #Create backup for gamelist.xml.
             create_gamelist_xml_backup || continue
             # Populate array with <lastplayed> tags found and sort them in a descending order.
