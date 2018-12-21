@@ -32,6 +32,7 @@ function dialog_msgbox() {
         --msgbox "$2" "$dialog_height" "$dialog_width" 2>&1 >/dev/tty
 }
 
+
 function dialog_yesno() {
     local title="$1"
     local message="$2"
@@ -132,7 +133,6 @@ function dialog_choose_all_systems_or_systems() {
 function dialog_choose_all_systems() {
     local all_systems
     local system
-
 
     all_systems="$(get_all_systems)"
     IFS=" " read -r -a all_systems <<< "${all_systems[@]}"
