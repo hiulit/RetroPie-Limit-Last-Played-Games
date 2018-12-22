@@ -10,6 +10,7 @@ function is_retropie() {
 function restart_ES() {
     local restart_file="/tmp/es-restart"
     touch "$restart_file"
+    chown -R "$user":"$user" "$restart_file"
     kill $(pidof emulationstation)
 }
 

@@ -14,10 +14,7 @@
 
 # Globals ########################################
 
-user="$SUDO_USER"
-[[ -z "$user" ]] && user="$(id -un)"
-
-# home="$(eval echo ~$user)"
+user="$(id -un)"
 home="$(find /home -type d -name RetroPie -print -quit 2> /dev/null)"
 home="${home%/RetroPie}"
 
