@@ -49,6 +49,17 @@ function dialog_yesno() {
 }
 
 
+function dialog_choose_debug_mode() {
+    dialog_yesno "Set debug mode" "Would you like to set debug mode on to test the script?\n\nIf debug mode is on, no harm will be done to the gamelists ;)"
+    local return_value="$?"
+    if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+        DEBUG_FLAG=1
+        DIALOG_BACKTITLE+=" (DEBUG MODE: ON)"
+    fi
+    dialog_choose_nth
+}
+
+
 function dialog_choose_nth() {
     local nth
     nth="$(dialog \
