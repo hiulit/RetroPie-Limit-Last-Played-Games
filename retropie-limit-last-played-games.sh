@@ -347,7 +347,9 @@ function main() {
 
     if [[ "$GUI_FLAG" -eq 1 ]]; then
         mkdir -p "$LOG_DIR"
+        chown -R "$user":"$user" "$LOG_DIR"
         touch "$LOG_FILE"
+        chown -R "$user":"$user" "$LOG_FILE"
     fi
 
     if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
