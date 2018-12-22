@@ -307,7 +307,11 @@ function get_options() {
 #H -g, --gui                Start the GUI.
             -g|--gui)
                 GUI_FLAG=1
-                dialog_choose_debug_mode
+                if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+                    dialog_choose_nth
+                else
+                    dialog_choose_debug_mode
+                fi
                 ;;
 #H -d, --debug              Set debug mode to test the script.
             -d|--debug)
@@ -338,7 +342,7 @@ function main() {
     get_options "$@"
 
     if [[ "${#@}" -eq 1 && "$DEBUG_FLAG" -eq 1 && "$GUI_FLAG" -eq 0 ]]; then
-        echo "'Debug mode' option must be accompanied by at least 1 other option." >&2
+        echo "ERROR: 'Debug mode' option must be accompanied by at least 1 other option." >&2
         exit 1
     fi
 
