@@ -4,7 +4,7 @@
 
 # Variables ############################################
 
-readonly DIALOG_BACKTITLE="$SCRIPT_TITLE"
+DIALOG_BACKTITLE="$SCRIPT_TITLE"
 readonly DIALOG_HEIGHT=20
 readonly DIALOG_WIDTH=60
 readonly DIALOG_OK=0

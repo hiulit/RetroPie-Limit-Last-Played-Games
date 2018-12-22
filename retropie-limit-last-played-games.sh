@@ -315,6 +315,7 @@ function get_options() {
 #H -d, --debug              Set debug mode to test the script.
             -d|--debug)
                 DEBUG_FLAG=1
+                DIALOG_BACKTITLE+=" (DEBUG MODE: ON)"
                 ;;
 #H -v, --version            Show script version.
             -v|--version)
@@ -339,6 +340,11 @@ function main() {
 
     get_options "$@"
 
+    if [[ "${#@}" -eq 1 && "$DEBUG_FLAG" -eq 1 ]]; then
+        echo "'Debug mode' option must be accompanied by at least 1 other option." >&2
+        exit 1
+    fi
+
     if [[ "$GUI_FLAG" -eq 1 ]]; then
         mkdir -p "$LOG_DIR"
         touch "$LOG_FILE"
@@ -352,7 +358,7 @@ function main() {
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             echo
             log "DEBUG MODE: ON"
-            log "No harm will done to the gamelists ;)"
+            log "No harm will be done to the gamelists ;)"
             log
         fi
         log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
@@ -380,7 +386,7 @@ function main() {
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             dialog_height=12
             text="DEBUG MODE: ON\n"
-            text+="No harm will done to the gamelists ;)\n\n"
+            text+="No harm has been done to the gamelists ;)\n\n"
         fi
         text+="All done!\n\n"
         text+="Check the log file in '$LOG_DIR'."

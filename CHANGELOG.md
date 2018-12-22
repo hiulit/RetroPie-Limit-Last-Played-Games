@@ -39,7 +39,7 @@
 
 * Option to install/Uninstall the script from EmulationStation's RetroPie menu.
 * GUI mode.
-* Debug mode - To test the script. No harm will done to the gamelists ;)
+* Debug mode - To test the script. No harm will be done to the gamelists ;)
 * Log files - Found in `/home/pi/Retropie-Limit-Last-Played-Games/logs`).
 
 ### Fixed
