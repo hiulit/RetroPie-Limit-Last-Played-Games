@@ -111,8 +111,8 @@ function find_gamelist_xml() {
     else
         gamelist_path="$RP_ROMS_DIR/$system/gamelist.xml"
         echo "'gamelist.xml' for '$system' found!"
-
         # Escape special characters.
+        echo
         echo "> Escaping special characters for the 'gamelist.xml' for '$system' ..."
         if escape_xml "$gamelist_path"; then
             echo "Special characters for the 'gamelist.xml' for '$system' escaped successfully!"
@@ -121,6 +121,7 @@ function find_gamelist_xml() {
             exit 1
         fi
         # Validate XML.
+        echo
         echo "> Validating 'gamelist.xml' for '$system' ..."
         if validate_xml "$gamelist_path"; then
             echo "'gamelist.xml' for '$system' validated successfully!"
@@ -134,6 +135,7 @@ function find_gamelist_xml() {
 
 function create_gamelist_xml_backup() {
     if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+        echo
         echo "> Creating '$gamelist_backup_file' for '$system' ..."
         mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
         cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
@@ -176,6 +178,7 @@ function reset_playcount() {
             is_are="are"
             game_s="games"
         fi
+        echo
         echo "> Removing the 'last played' games surplus for '$system' ..."
         if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
             # Games to remove.
