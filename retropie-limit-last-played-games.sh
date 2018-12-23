@@ -14,10 +14,7 @@
 
 # Globals ########################################
 
-user="$SUDO_USER"
-[[ -z "$user" ]] && user="$(id -un)"
-
-# home="$(eval echo ~$user)"
+user="$(id -un)"
 home="$(find /home -type d -name RetroPie -print -quit 2> /dev/null)"
 home="${home%/RetroPie}"
 
@@ -114,8 +111,8 @@ function find_gamelist_xml() {
     else
         gamelist_path="$RP_ROMS_DIR/$system/gamelist.xml"
         echo "'gamelist.xml' for '$system' found!"
-
         # Escape special characters.
+        echo
         echo "> Escaping special characters for the 'gamelist.xml' for '$system' ..."
         if escape_xml "$gamelist_path"; then
             echo "Special characters for the 'gamelist.xml' for '$system' escaped successfully!"
@@ -124,6 +121,7 @@ function find_gamelist_xml() {
             exit 1
         fi
         # Validate XML.
+        echo
         echo "> Validating 'gamelist.xml' for '$system' ..."
         if validate_xml "$gamelist_path"; then
             echo "'gamelist.xml' for '$system' validated successfully!"
@@ -137,6 +135,7 @@ function find_gamelist_xml() {
 
 function create_gamelist_xml_backup() {
     if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+        echo
         echo "> Creating '$gamelist_backup_file' for '$system' ..."
         mkdir -p "$(dirname "$gamelist_path")/$gamelist_backup_dir"
         cp "$(dirname "$gamelist_path")/gamelist.xml" "$(dirname "$gamelist_path")/$gamelist_backup_dir/$(date +%F-%T)-$gamelist_backup_file" > /dev/null
@@ -179,6 +178,7 @@ function reset_playcount() {
             is_are="are"
             game_s="games"
         fi
+        echo
         echo "> Removing the 'last played' games surplus for '$system' ..."
         if [[ "$NTH_LAST_PLAYED" -lt "${#last_played_array[@]}" ]]; then
             # Games to remove.
@@ -310,11 +310,16 @@ function get_options() {
 #H -g, --gui                Start the GUI.
             -g|--gui)
                 GUI_FLAG=1
-                dialog_choose_nth
+                if [[ "$DEBUG_FLAG" -eq 1 ]]; then
+                    dialog_choose_nth
+                else
+                    dialog_choose_debug_mode
+                fi
                 ;;
 #H -d, --debug              Set debug mode to test the script.
             -d|--debug)
                 DEBUG_FLAG=1
+                DIALOG_BACKTITLE+=" (DEBUG MODE: ON)"
                 ;;
 #H -v, --version            Show script version.
             -v|--version)
@@ -339,9 +344,16 @@ function main() {
 
     get_options "$@"
 
+    if [[ "${#@}" -eq 1 && "$DEBUG_FLAG" -eq 1 && "$GUI_FLAG" -eq 0 ]]; then
+        echo "ERROR: 'Debug mode' option must be accompanied by at least 1 other option." >&2
+        exit 1
+    fi
+
     if [[ "$GUI_FLAG" -eq 1 ]]; then
         mkdir -p "$LOG_DIR"
+        chown -R "$user":"$user" "$LOG_DIR"
         touch "$LOG_FILE"
+        chown -R "$user":"$user" "$LOG_FILE"
     fi
 
     if [[ "${#SYSTEMS[@]}" -eq 0 ]]; then
@@ -352,7 +364,7 @@ function main() {
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             echo
             log "DEBUG MODE: ON"
-            log "No harm will done to the gamelists ;)"
+            log "No harm will be done to the gamelists ;)"
             log
         fi
         log "Number of 'last played' games to limit is set to '$NTH_LAST_PLAYED'."
@@ -380,7 +392,7 @@ function main() {
         if [[ "$DEBUG_FLAG" -eq 1 ]]; then
             dialog_height=12
             text="DEBUG MODE: ON\n"
-            text+="No harm will done to the gamelists ;)\n\n"
+            text+="No harm has been done to the gamelists ;)\n\n"
         fi
         text+="All done!\n\n"
         text+="Check the log file in '$LOG_DIR'."

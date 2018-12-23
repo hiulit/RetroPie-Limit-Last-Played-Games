@@ -4,7 +4,7 @@
 
 # Variables ############################################
 
-readonly DIALOG_BACKTITLE="$SCRIPT_TITLE"
+DIALOG_BACKTITLE="$SCRIPT_TITLE"
 readonly DIALOG_HEIGHT=20
 readonly DIALOG_WIDTH=60
 readonly DIALOG_OK=0
@@ -32,6 +32,7 @@ function dialog_msgbox() {
         --msgbox "$2" "$dialog_height" "$dialog_width" 2>&1 >/dev/tty
 }
 
+
 function dialog_yesno() {
     local title="$1"
     local message="$2"
@@ -45,6 +46,17 @@ function dialog_yesno() {
         --backtitle "$DIALOG_BACKTITLE" \
         --title "$1" \
         --yesno "$2" "$dialog_height" "$dialog_width" 2>&1 >/dev/tty
+}
+
+
+function dialog_choose_debug_mode() {
+    dialog_yesno "Set debug mode" "Would you like to set debug mode on to test the script?\n\nIf debug mode is on, no harm will be done to the gamelists ;)"
+    local return_value="$?"
+    if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+        DEBUG_FLAG=1
+        DIALOG_BACKTITLE+=" (DEBUG MODE: ON)"
+    fi
+    dialog_choose_nth
 }
 
 
@@ -132,7 +144,6 @@ function dialog_choose_all_systems_or_systems() {
 function dialog_choose_all_systems() {
     local all_systems
     local system
-
 
     all_systems="$(get_all_systems)"
     IFS=" " read -r -a all_systems <<< "${all_systems[@]}"

@@ -121,7 +121,9 @@ It lets you use the script in a more friendly way.
 
 Set debug mode to test the script.
 
-No harm will done to the gamelists ;)
+No harm will be done to the gamelists ;)
+
+If you want to explicitly know that you are under `debug mode`, use this option as the first parameter when launching the script and it will appear on the script's title.
 
 #### Example
 
