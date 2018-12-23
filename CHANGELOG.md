@@ -4,6 +4,17 @@
 
 * Up to date
 
+## [2.1.3] - 2018-12-23
+
+### Fixed
+
+* Files permissions.
+
+### Added
+
+* Debug mode dialog when using the script via the EmulationStation's RetroPie menu.
+* Debug mode text in script's title when debug mode is on.
+
 ## [2.1.2] - 2018-09-20
 
 ### Fixed
@@ -31,13 +42,13 @@
 
 ### Fixed
 
-* When there are duplicated <lastplayed> tags in different games the script crashes. Now, if the scripts find duplicates, it looks for the game's name (it should be different).
+* When there are duplicated `<lastplayed>` tags in different games the script crashes. Now, if the scripts find duplicates, it looks for the game's name (it should be different).
 
 ## [2.0.0] - 2018-09-07
 
 ### Added
 
-* Option to install/Uninstall the script from EmulationStation's RetroPie menu.
+* Option to install/uninstall the script in EmulationStation's RetroPie menu.
 * GUI mode.
 * Debug mode - To test the script. No harm will be done to the gamelists ;)
 * Log files - Found in `/home/pi/Retropie-Limit-Last-Played-Games/logs`).
