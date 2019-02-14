@@ -193,6 +193,7 @@ function reset_playcount() {
             echo "> Done!"
             # Games to show in 'last played' section.
             log "Games that will be shown in the 'last played' section:"
+            echo ""
             for last_played_item in "${last_played_array[@]:0:$NTH_LAST_PLAYED}"; do
                 local game_name
                 game_name="$last_played_item"
@@ -398,12 +399,15 @@ function main() {
         text+="Check the log file in '$LOG_DIR'."
         dialog_msgbox "Info" "$text" "$dialog_height"
     fi
-    # Check if EmulationStation is running
-    if pidof emulationstation > /dev/null; then
-        dialog_yesno "Info" "In order to see the changes applied to the game lists, EmulationStation need to be restarted.\n\nWould you like to restart EmulationStation?"
-        local return_value="$?"
-        if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
-            restart_ES
+
+    if [[ "$DEBUG_FLAG" -eq 0 ]]; then
+        # Check if EmulationStation is running
+        if pidof emulationstation > /dev/null; then
+            dialog_yesno "Info" "In order to see the changes applied to the game lists, EmulationStation need to be restarted.\n\nWould you like to restart EmulationStation?"
+            local return_value="$?"
+            if [[ "$return_value" -eq "$DIALOG_OK" ]]; then
+                restart_ES
+            fi
         fi
     fi
 }
