@@ -141,11 +141,11 @@ Show script version.
 
 > With debug mode on
 
-![examples/01.png]
-![examples/02.png]
-![examples/03.png]
-![examples/04.png]
-![examples/05.png]
+![01](examples/01.png)
+![02](examples/02.png)
+![03](examples/03.png)
+![04](examples/04.png)
+![05](examples/05.png)
 
 ## Changelog
 
