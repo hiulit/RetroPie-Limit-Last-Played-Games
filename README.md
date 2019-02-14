@@ -137,6 +137,16 @@ Show script version.
 
 `./retropie-limit-last-played-games.sh --version`
 
+## Screenshots
+
+> With debug mode on
+
+![01](examples/01.png)
+![02](examples/02.png)
+![03](examples/03.png)
+![04](examples/04.png)
+![05](examples/05.png)
+
 ## Changelog
 
 See [CHANGELOG](/CHANGELOG.md).
@@ -157,4 +167,4 @@ Thanks to:
 
 ## License
 
-[[LICENSE]](/LICENSE).
+[LICENSE](/LICENSE).
