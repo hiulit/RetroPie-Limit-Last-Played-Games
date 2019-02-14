@@ -167,4 +167,4 @@ Thanks to:
 
 ## License
 
-[[LICENSE]](/LICENSE).
+[LICENSE](/LICENSE).
