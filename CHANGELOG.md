@@ -4,6 +4,12 @@
 
 * Up to date
 
+## [2.1.4] - 2019-02-14
+
+### Fixed
+
+* The script won't ask anymore to restart EmulationStation (if it's running) when debug mode is on.
+
 ## [2.1.3] - 2018-12-23
 
 ### Fixed
