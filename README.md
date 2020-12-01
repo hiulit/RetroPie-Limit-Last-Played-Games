@@ -1,4 +1,4 @@
-# Retropie Limit Last Played Games
+# Retropie Limit Last Played Games ![GitHub release (latest by date)](https://img.shields.io/github/v/release/hiulit/RetroPie-Limit-Last-Played-Games)
 
 A tool for RetroPie to limit the number of 'last played' games.
 
